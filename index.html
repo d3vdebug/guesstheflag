@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Guessing Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Bungee&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Favicons & App Icons for PWA functionality -->
+    <link rel="manifest" href="data:application/json;base64,eyJpY29ucyI6W3sic2l6ZXMiOiIxOTJ4MTkyIiwiZm9ybWF0IjoiZW11c2l2ZS1pY29uIiwic3JjIjoiaHR0cHM6Ly9wbGFjZWhvbGQuY28vMTkyeDE5Mi8wMGJjZDRmZmZmZj90ZXh0PUZsYWclMkJHb3NzaW5nIn0seyJzaXplcyI6IjUxMng1MTIiLCJmb3JtYXQiOiJlbXVzaXZlLWljb24iLCJzcmMiOiJodHRwczovL3BsYWNlaG9sZC5jby81MTJ4NTEyLzAwYmNkNGZmZmZmP3RleHQ9RmxhZyUyMEdvc3NpbmciXSwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJzdGFydF91cmwiOiIuIiwibmFtZSI6IkZsYWcgR3Vlc3NpbmcgR2FtZSIsInNob3J0X25hbWUiOiJGbGFnIEdhbWUiLCJ0aGVtZV9jb2xvciI6IiMwMGJjZDRhYmZjcyIsImJhY2tncm91bmRfY29sb3IiOiIjMTIxMjEyIiwic3RhcnRfdXJsIjoiaW5kZXguaHRtbCIsImRlc2NyaXB0aW9uIjoiR2FtZSB0byBnbyBpbiB0aGUgYnJvd3NlciIsIm9yaWVudGF0aW9uIjoidG9rZW4iLCJtb2RhbGl0aWVzIjpbIkF1ZGlvIiwiQnJvd3NpbmciLCJDb2RlIiwiQ29udmVyc2F0aW9uIiwiRmlsZXMiLCJJbWFnZSIsIkxvY2F0aW9uIiwib3RoZXIiLCJTdG9yYWdlIiwiVGltZSIsIlRyeXBlIl0sInByb3BlcnRpZXMiOnsiZGlzY2xhbWVyIjoiaW5zdGFsbGF0aW9uIGlzIG5vdCBwb3NzaWJsZSIsImZ1bmN0aW9uIjoidG8gcGxheSJ9fQ==">
+    <!-- iOS support for 'Add to Home Screen' -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Flag Game">
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/00bcd4/ffffff?text=Flag+Game">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="game-container">
+    <h1>Guess The Flag</h1>
+    <div class="info-bar">
+        <div id="score-display" class="score-box">
+            <i class="fas fa-star"></i>
+            <span>Score: 0</span>
+        </div>
+        <div id="streak-display" class="score-box">
+            <i class="fas fa-fire"></i>
+            <span>🔥 0</span>
+        </div>
+    </div>
+    
+    <img id="flag-image" src="" alt="Country Flag">
+    <p id="message" class="message"></p>
+    <div class="answer-buttons"></div>
+    <div id="question-count-display">Question: 0/10</div>
+    <button id="next-btn" class="btn">
+        Next Question <i class="fas fa-arrow-right"></i>
+    </button>
+</div>
+
+<div id="game-over-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 id="final-summary"></h2>
+        <h2>Game Over!</h2>
+        <p>Your final score is: </p>
+        <span id="final-score">0</span>
+        <button id="restart-btn">Play Again</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
