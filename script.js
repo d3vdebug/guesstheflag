@@ -119,12 +119,18 @@
     const flagImage = document.getElementById('flag-image');
     const scoreDisplay = document.getElementById('score-display');
     const streakDisplay = document.getElementById('streak-display');
+    const highscoreDisplay = document.getElementById('highscore-display');
+    const timerText = document.getElementById('timer-text');
+    const fiftyBtn = document.getElementById('fifty-btn');
+    const skipBtn = document.getElementById('skip-btn');
+    const difficultySelect = document.getElementById('difficulty');
     const questionCountDisplay = document.getElementById('question-count-display');
     const messageDisplay = document.getElementById('message');
     const answerButtonsContainer = document.querySelector('.answer-buttons');
     const nextButton = document.getElementById('next-btn');
     const gameOverModal = document.getElementById('game-over-modal');
     const finalScoreDisplay = document.getElementById('final-score');
+    const finalBestDisplay = document.getElementById('final-best');
     const finalSummaryDisplay = document.getElementById('final-summary');
     const restartButton = document.getElementById('restart-btn');
 
@@ -135,6 +141,12 @@
     const questionsPerGame = 10;
     let currentQuestionNumber = 0;
     let usedCountryCodes = [];
+    let bestScore = Number(localStorage.getItem('gtf_best_score') || 0);
+    let timerInterval = null;
+    let timeRemainingSeconds = 0;
+    let usedFifty = false;
+    let usedSkip = false;
+    let questionLocked = false;
 
     // Utility function to get a random item from an array
     function getRandomItem(arr, excludedItem = null) {
@@ -155,25 +167,74 @@
 
     // Start a new game
     function startGame() {
+        clearTimer();
         score = 0;
         streak = 0;
         currentQuestionNumber = 0;
         usedCountryCodes = [];
-        updateScoreDisplay(); // Use new function to update display
+        usedFifty = false;
+        usedSkip = false;
+        questionLocked = false;
+        updateHighscoreDisplay();
+        updateScoreDisplay();
         updateStreakDisplay();
         questionCountDisplay.textContent = `Question: 0/${questionsPerGame}`;
+        messageDisplay.textContent = '';
         gameOverModal.style.display = 'none';
+        // Reset lifeline buttons
+        if (fiftyBtn) {
+            fiftyBtn.disabled = false;
+        }
+        if (skipBtn) {
+            skipBtn.disabled = false;
+        }
         loadNewQuestion();
     }
 
     // Update the score display with the star icon
     function updateScoreDisplay() {
-        scoreDisplay.querySelector('span').textContent = `Score: ${score}`;
+        if (scoreDisplay) scoreDisplay.textContent = `Score: ${score}`;
     }
 
     // Update the streak display to always include the fire emoji
     function updateStreakDisplay() {
-        streakDisplay.querySelector('span').textContent = `${streak}`;
+        if (streakDisplay) streakDisplay.textContent = `Streak: ${streak}`;
+    }
+
+    function updateHighscoreDisplay() {
+        if (highscoreDisplay) highscoreDisplay.textContent = `Best: ${bestScore}`;
+    }
+
+    function getTimePerQuestionSeconds() {
+        const difficulty = difficultySelect ? difficultySelect.value : 'normal';
+        if (difficulty === 'easy') return 20;
+        if (difficulty === 'hard') return 10;
+        return 15; // normal
+    }
+
+    function startTimer() {
+        clearTimer();
+        timeRemainingSeconds = getTimePerQuestionSeconds();
+        updateTimerText();
+        timerInterval = setInterval(() => {
+            timeRemainingSeconds--;
+            updateTimerText();
+            if (timeRemainingSeconds <= 0) {
+                clearTimer();
+                handleTimeUp();
+            }
+        }, 1000);
+    }
+
+    function updateTimerText() {
+        if (timerText) timerText.textContent = `${timeRemainingSeconds}s`;
+    }
+
+    function clearTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
     }
 
     // Load a new question
@@ -183,6 +244,7 @@
             return;
         }
 
+        questionLocked = false;
         currentQuestionNumber++;
 
         questionCountDisplay.textContent = `Question: ${currentQuestionNumber}/${questionsPerGame}`;
@@ -215,12 +277,26 @@
 
         messageDisplay.textContent = '';
         nextButton.style.display = 'none';
+
+        // Re-enable lifelines for this question if not used yet
+        if (fiftyBtn) fiftyBtn.disabled = usedFifty;
+        if (skipBtn) skipBtn.disabled = usedSkip;
+
+        // Start timer
+        startTimer();
     }
 
     // Check if the selected answer is correct
     function checkAnswer(selectedCountryName) {
+        if (questionLocked) return;
+        questionLocked = true;
+        clearTimer();
         const answerButtons = answerButtonsContainer.querySelectorAll('.btn');
         const isCorrect = selectedCountryName === currentCountry.name;
+
+        // disable lifelines after answer
+        if (fiftyBtn) fiftyBtn.disabled = true;
+        if (skipBtn) skipBtn.disabled = true;
 
         answerButtons.forEach(btn => btn.disabled = true);
 
@@ -232,24 +308,47 @@
             messageDisplay.textContent = "Correct!";
             messageDisplay.style.color = '#2ecc71';
             const correctButton = Array.from(answerButtons).find(btn => btn.textContent === currentCountry.name);
-            correctButton.classList.add('correct');
+            if (correctButton) correctButton.classList.add('correct');
         } else {
             streak = 0; // Reset streak on incorrect answer
             updateStreakDisplay();
             messageDisplay.textContent = `Incorrect! The correct answer was ${currentCountry.name}.`;
             messageDisplay.style.color = '#e74c3c';
             const selectedButton = Array.from(answerButtons).find(btn => btn.textContent === selectedCountryName);
-            selectedButton.classList.add('incorrect');
+            if (selectedButton) selectedButton.classList.add('incorrect');
             const correctButton = Array.from(answerButtons).find(btn => btn.textContent === currentCountry.name);
-            correctButton.classList.add('correct');
+            if (correctButton) correctButton.classList.add('correct');
         }
 
         nextButton.style.display = 'block';
     }
 
+    function handleTimeUp() {
+        if (questionLocked) return;
+        questionLocked = true;
+        const answerButtons = answerButtonsContainer.querySelectorAll('.btn');
+        answerButtons.forEach(btn => btn.disabled = true);
+        streak = 0;
+        updateStreakDisplay();
+        messageDisplay.textContent = `Time's up! The correct answer was ${currentCountry.name}.`;
+        messageDisplay.style.color = '#e74c3c';
+        const correctButton = Array.from(answerButtons).find(btn => btn.textContent === currentCountry.name);
+        if (correctButton) correctButton.classList.add('correct');
+        if (fiftyBtn) fiftyBtn.disabled = true;
+        if (skipBtn) skipBtn.disabled = true;
+        nextButton.style.display = 'block';
+    }
+
     // Show the game over screen
     function showGameOver() {
+        clearTimer();
         finalScoreDisplay.textContent = score;
+        if (score > bestScore) {
+            bestScore = score;
+            localStorage.setItem('gtf_best_score', String(bestScore));
+        }
+        updateHighscoreDisplay();
+        if (finalBestDisplay) finalBestDisplay.textContent = String(bestScore);
         let summaryText;
         if (score === questionsPerGame) {
             summaryText = "Perfect score! You're a flag master! 🌟";
@@ -267,6 +366,47 @@
     // Event listeners
     nextButton.addEventListener('click', loadNewQuestion);
     restartButton.addEventListener('click', startGame);
+
+    if (fiftyBtn) {
+        fiftyBtn.addEventListener('click', () => {
+            if (usedFifty || questionLocked) return;
+            const buttons = Array.from(answerButtonsContainer.querySelectorAll('.btn'));
+            const wrongButtons = buttons.filter(btn => btn.textContent !== currentCountry.name && !btn.disabled);
+            shuffleArray(wrongButtons);
+            wrongButtons.slice(0, 2).forEach(btn => {
+                btn.classList.add('removed');
+                btn.disabled = true;
+            });
+            usedFifty = true;
+            fiftyBtn.disabled = true;
+        });
+    }
+
+    if (skipBtn) {
+        skipBtn.addEventListener('click', () => {
+            if (usedSkip || questionLocked) return;
+            usedSkip = true;
+            skipBtn.disabled = true;
+            clearTimer();
+            loadNewQuestion();
+        });
+    }
+
+    // Keyboard shortcuts: 1-4 to answer, Enter to next
+    window.addEventListener('keydown', (e) => {
+        if (gameOverModal && gameOverModal.style.display === 'flex') return;
+        const buttons = Array.from(answerButtonsContainer.querySelectorAll('.btn'))
+            .filter(btn => !btn.disabled && !btn.classList.contains('removed'));
+        if (e.key >= '1' && e.key <= '4') {
+            const idx = Number(e.key) - 1;
+            if (buttons[idx]) buttons[idx].click();
+        }
+        if (e.key === 'Enter') {
+            if (nextButton && nextButton.style.display === 'block') {
+                nextButton.click();
+            }
+        }
+    });
 
     // Start the game for the first time
     window.onload = startGame;
