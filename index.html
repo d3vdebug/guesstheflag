@@ -11,24 +11,38 @@
 </head>
 <body>
     <div class="game-container">
-        <h1>Flag Quiz Game</h1>
+        <h1>Guess The Flag!</h1>
         <div class="info-bar">
-            <div class="score-box"><i>⭐</i><span id="score-display"><span>Score: 0</span></span></div>
-            <div class="score-box"><i>🔥</i><span id="streak-display"><span>0</span></span></div>
+            <div class="score-box"><i>⭐</i><span id="score-display">Score: 0</span></div>
+            <div class="score-box"><i>🔥</i><span id="streak-display">Streak: 0</span></div>
+            <div class="score-box"><i>🏆</i><span id="highscore-display">Best: 0</span></div>
+            <div class="score-box" id="timer-display" aria-live="polite"><i>⏳</i><span id="timer-text">--s</span></div>
         </div>
         
         <img id="flag-image" src="" alt="Flag" />
-        <div class="message" id="message"></div>
+        <div class="message" id="message" role="status" aria-live="polite"></div>
+        <div class="tools-bar">
+            <button id="fifty-btn" class="utility-btn" title="Remove two wrong answers (once per game)">50/50</button>
+            <button id="skip-btn" class="utility-btn" title="Skip this question (once per game)">Skip</button>
+            <label class="difficulty">
+                <select id="difficulty" aria-label="Select difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="normal" selected>Normal</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </label>
+        </div>
         <div class="answer-buttons"></div>
-        <button id="next-btn">Next</button>
+        <button id="next-btn">Next Flag</button>
         <div id="question-count-display">Question: 0/10</div>
     </div>
     <div class="modal-overlay" id="game-over-modal">
         <div class="modal-content">
             <div>Game Over!</div>
-            <span id="final-score">0</span>
+            <span id="final-score">Final Score: 0</span>
+            <div id="best-score-line">Best Score: <span id="final-best">0</span></div>
             <div id="final-summary"></div>
-            <button id="restart-btn">Restart</button>
+            <button id="restart-btn">Play Again</button>
         </div>
     </div>
     <script src="script.js"></script>
